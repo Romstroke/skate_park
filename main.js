@@ -19,8 +19,12 @@ app.listen(3000, () => {
 //carpeta public
 app.use(express.static(__dirname + "/public"));
 app.use("/css", express.static(__dirname + "/node_modules/bootstrap/dist/css"));
+app.use('/jquery', express.static(__dirname + '/node_modules/jquery/dist'))
+
+
 //
 app.set('view engine', 'handlebars');
+// app.set('views', '/views/componentes');
 
 app.engine('handlebars', exphbs.engine({
     extname: '.handlebars', // Extensiones de los archivos de plantillas
@@ -30,17 +34,25 @@ app.engine('handlebars', exphbs.engine({
 }));
 
 app.get("/", async (req, res) => { //ruta raiz
-    res.render("main");
+    res.render("Home");
 });
 
-// //sirviendo html sin handlebars 
+app.get("/login", async (req, res) => { 
+    res.render("Login");
+});
+
+app.get("/registro", (req, res) => {
+    res.render("Registro");
+});
+
+// //sirviendo html sin handlebars
 // app.get('/index', (req,res) => {
 //     res.sendFile(__dirname + '/index.html') //vista HOME, lo primero que vemos al levantar la app
 // });
 
-//plataforma web en la que los participantes se podrán registrar y revisar el estado de su solicitud 
+//plataforma web en la que los participantes se podrán registrar y revisar el estado de su solicitud
 
-// 1. Crear una API REST con el Framework Express (3 Puntos)  
+// 1. Crear una API REST con el Framework Express (3 Puntos)
 // 2. Servir contenido dinámico con express-handlebars (3 Puntos)
-// 3. Ofrecer la funcionalidad Upload File con express-fileupload (2 Puntos) 
+// 3. Ofrecer la funcionalidad Upload File con express-fileupload (2 Puntos)
 // 4. Implementar seguridad y restricción de recursos o contenido con JWT (2 Puntos)  
