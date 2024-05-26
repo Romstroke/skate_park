@@ -1,3 +1,4 @@
+//DEPENDENCIAS
 // Express
 const express = require('express');
 const app = express();
@@ -17,13 +18,25 @@ app.listen(3000, () => {
 });
 //carpeta public
 app.use(express.static(__dirname + "/public"));
-
+app.use("/css", express.static(__dirname + "/node_modules/bootstrap/dist/css"));
+//
 app.set('view engine', 'handlebars');
 
-//sirviendo html sin handlebars 
-app.get('/', (req,res) => {
-    res.sendFile(__dirname + '/index.html')
+app.engine('handlebars', exphbs.engine({
+    extname: '.handlebars', // Extensiones de los archivos de plantillas
+    defaultLayout: 'main', // Plantilla principal
+    layoutsDir: __dirname + '/views', // Directorio de las plantillas principales
+    partialsDir: __dirname + '/views/componentes' // Directorio de los partials
+}));
+
+app.get("/", async (req, res) => { //ruta raiz
+    res.render("main");
 });
+
+// //sirviendo html sin handlebars 
+// app.get('/index', (req,res) => {
+//     res.sendFile(__dirname + '/index.html') //vista HOME, lo primero que vemos al levantar la app
+// });
 
 //plataforma web en la que los participantes se podrán registrar y revisar el estado de su solicitud 
 
