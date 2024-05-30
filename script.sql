@@ -1,7 +1,7 @@
 -- persistencia de datos en bbdd
 CREATE DATABASE skatepark;
 
-\ c skatepark;
+\c skatepark;
 
 CREATE TABLE skaters (
     id SERIAL,
