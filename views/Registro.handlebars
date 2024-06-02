@@ -1,8 +1,8 @@
 <div class="py-4">
     <h2>Registro</h2>
     <hr class="w-50" />
-{{!-- action="/skaters" method="POST" enctype="multipart/form-data" --}}
-    <form >
+    {{!-- action="/skaters" method="POST" enctype="multipart/form-data" --}}
+    <form>
         <div class="form-group row w-50 m-auto">
             <div class="form-group col-12 col-sm-6">
                 <label>Email</label>
@@ -30,7 +30,7 @@
             </div>
             <div class="form-group col-12 col-sm-12">
                 <label>Foto de perfil</label>
-                <input type="file" name="foto" />
+                <input type="file" name="foto" accept=".png, .jpg, .tif, .gif"/> <!-- multiple -->
             </div>
         </div>
         <button class="btn btn-info mb-3">Registrarme</button>
@@ -38,55 +38,76 @@
     </form>
 </div>
 <script>
-    
-    const form = document.querySelector("form")
-  form.addEventListener("submit", async (e) => {
-        e.preventDefault()
-        console.log('fd',document.querySelectorAll('input'))
-        let [nombre,anos_experiencia, especialidad, email,password,foto] = document.querySelectorAll("input")
-        
-    //    console.log("Valores de Input: ", nombre.value, anos_experiencia.value, 
-      //  especialidad.value, email.value, password.value,foto.files[0])
+//en el form no va action html standard
 
-        const formData = new FormData();
-        formData.append('nombre', nombre.value);
-        formData.append('anos_experiencia', anos_experiencia.value);
-        formData.append('especialidad', especialidad.value);
-        formData.append('email', email.value);
-        formData.append('password', password.value);
-        formData.append('foto', foto.files);
+    document.querySelector('form').addEventListener('submit', function (event) {
+        event.preventDefault();
 
-        console.log(formData);
+        let formData = new FormData(this);
+        console.log(Object.fromEntries(formData.entries()))
 
-
-        nombre = nombre.value
-        anos_experiencia = anos_experiencia.value
-        especialidad = especialidad.value
-        email = email.value
-        password = password.value
-        foto = foto.value
-
-           const skater = {
-            //id,
-            nombre,
-            email,
-            password,
-            anos_experiencia,
-            especialidad,
-            foto
-        }
-         try {
-           const response = await axios.post("/skaters", formData)
-           console.log('response',response)
-           if(response.data.error){
-            alert(response.data.mensaje);
-           }
-           // alert("Datos actualizados con éxito")
-           // window.location = "/"
-        } catch (error) {
-            //const { data } = response
-            //const { error } = data
-            alert(error)
-        }
-  });
+        axios.post('/skaters', formData)
+            .then(response => {
+                if (response.data.error) {
+                    alert(response.data.mensaje);
+                } else {
+                    // Redirige a otra página o actualiza la interfaz de usuario
+                   // window.location.href = '/';
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('Ocurrió un error al enviar el formulario.');
+            });
+    });
+    /*  const form = document.querySelector("form")
+    form.addEventListener("submit", async (e) => {
+          e.preventDefault()
+          console.log('fd',document.querySelectorAll('input'))
+          //let [nombre,anos_experiencia, especialidad, email,password,foto] = document.querySelectorAll("input")
+          let [email,nombre, password, anos_experiencia, especialidad, foto] = document.querySelectorAll("input");
+          
+        console.log("Valores de Input: ", nombre.value, anos_experiencia.value, 
+        especialidad.value, email.value, password.value,foto.files[0].name, foto.value)
+  
+          const formData = new FormData();
+          formData.append('nombre', nombre.value);
+          formData.append('anos_experiencia', anos_experiencia.value);
+          formData.append('especialidad', especialidad.value);
+          formData.append('email', email.value);
+          formData.append('password', password.value);
+          formData.append('foto', foto.files);
+  
+          console.log(formData);
+  
+  
+          nombre = nombre.value
+          anos_experiencia = anos_experiencia.value
+          especialidad = especialidad.value
+          email = email.value
+          password = password.value
+          foto = foto.value
+  
+             const skater = {
+              //id,
+              nombre,
+              email,
+              password,
+              anos_experiencia,
+              especialidad,
+              foto
+          }
+           try {
+             const response = await axios.post("/skaters", formData)
+             console.log('response',response)
+             if(response.data.error){
+              alert(response.data.mensaje);
+             }
+             // alert("Datos actualizados con éxito")
+             // window.location = "/"
+          } catch (error) {
+              //const { data } = response
+              //const { error } = data
+              alert(error)
+          }
+    });*/
 </script>

@@ -1,21 +1,13 @@
-// Importaciones
+const {obtenerSkaters,consultaSkater,agregarSkater,editar,editarStatus,eliminar} = require('./consultas/consultas.js');
+
 const express = require("express");
 const app = express();
-// const exphbs = require("express-handlebars");
-const { create } = require("express-handlebars");
+const exphbs = require("express-handlebars");
+// const { create } = require("express-handlebars");
 const expressFileUpload = require("express-fileupload");
 const jwt = require("jsonwebtoken");
 const secretKey = "Shhhh";
-// - PostgreSQL (pg)
-const { Pool } = require("pg");
 
-const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'skatepark',
-    password: '1234',
-    port: 5432
-});
 let skaters = [];
 // const skaters = [
 //     {
@@ -70,34 +62,27 @@ app.use(
 );
 app.use("/css", express.static(__dirname + "/node_modules/bootstrap/dist/css"));
 
-// app.engine(
-//     "handlebars",
-//     exphbs({
-//         defaultLayout: "main",
-//         layoutsDir: `${__dirname}/views/mainLayout`,
-//     })
-// );
-// app.set("view engine", "handlebars");
-const hbs = create({
-    defaultLayout: "main",
-    layoutsDir: `${__dirname}/views/mainLayout`,
-});
-app.engine("handlebars", hbs.engine);
+app.engine(
+    "handlebars",
+    exphbs.engine({
+        defaultLayout: "main",
+        layoutsDir: `${__dirname}/views/mainLayout`,
+    })
+);
 app.set("view engine", "handlebars");
+// const hbs = create({
+//     defaultLayout: "main",
+//     layoutsDir: `${__dirname}/views/mainLayout`,
+// });
+// app.engine("handlebars", hbs.engine);
+// app.set("view engine", "handlebars");
 
 
 // Rutas asociadas a los handlebars
 app.get("/", async (req, res) => {
     try {
-        // let skaters = [];
-        async function obtenerSkaters() {
-            const result = await pool.query("SELECT * FROM skaters");
-            // console.log(result);
-            skaters = result.rows;
-            return result.rows;
-        }
-        await obtenerSkaters()
-        res.render("Home", {skaters});
+        skaters = await obtenerSkaters()
+        res.render("Home", { skaters });
     } catch (e) {
         res.status(500).send({
             error: `Algo salió mal... ${e}`,
@@ -131,17 +116,11 @@ app.get("/login", (req, res) => {
 
 app.post("/login", async (req, res) => {
     const { email, password } = req.body
-    console.log(email,password);
+    console.log(email, password);
     try {
-        //TO DO CONSULTA A LA BASE DE DATOS PARA SABER SI ES QUE EL USUARIO EXISTE 
-        async function consultaSkater(email,password) {
-            const result = await pool.query("SELECT * FROM skaters WHERE email = $1 AND password = $2", [email,password]); //aqui no se usa el returning, porque el select retorna, solo se usa cuando inserto o modifico algo
-            // console.log(result);
-            return result.rows[0];
-        } // esto no es una void pq tiene return dice eel luxo
         // const skater = skaters.find((s) => s.email == email &&
         //     s.password == password);
-        const skater = await consultaSkater(email,password);
+        const skater = await consultaSkater(email, password);
         // console.log(usuario);
         const token = jwt.sign(skater, secretKey)
         res.status(200).send(token)
@@ -171,7 +150,6 @@ app.get("/Admin", async (req, res) => {
 // API REST de Skaters
 
 app.get("/skaters", async (req, res) => {
-
     try {
         res.status(200).send(skaters);
     } catch (e) {
@@ -186,11 +164,11 @@ app.post("/skaters", async (req, res) => {
     // console.log(req);
     // console.log(req.body);
     const { email, nombre, password, anos_experiencia, especialidad } = req.body;
-    
-    if (req.files == null){
-      return res.json({ //era por lo del status
-            error:400,
-            mensaje:"Debes proporcionar una foto."
+
+    if (req.files == null) {
+        return res.json({ //era por lo del status
+            error: 400,
+            mensaje: "Debes proporcionar una foto."
         });
     }
     const foto = req.files.foto;
@@ -210,17 +188,6 @@ app.post("/skaters", async (req, res) => {
             if (err) throw err
             // skater.foto = pathPhoto
             //cargar el usuario a la base de datos req.body
-            async function agregarSkater(email, nombre, password, anos_experiencia, especialidad, pathPhoto) {
-                // console.log("Valores recibidos: ", email, nombre, password, anos_experiencia, especialidad, pathPhoto);
-                const result = await pool.query({
-                    text: 'INSERT INTO skaters (email,nombre,password,anos_experiencia,especialidad,foto,estado) VALUES ($1, $2, $3, $4, $5, $6,$7) RETURNING *',
-                    values: [email, nombre, password, anos_experiencia, especialidad, pathPhoto, false]
-                })
-                console.log("Registro agregado: ", result.rows[0]);
-                //Respuesta de la funcion
-                return result.rows[0];
-                // return "Registro agregado con exito"
-            };
             // skaters.push(skater);
             await agregarSkater(email, nombre, password, anos_experiencia, especialidad, pathPhoto);
             res.status(201).redirect("/");
@@ -236,14 +203,10 @@ app.post("/skaters", async (req, res) => {
 })
 
 app.put("/skaters", async (req, res) => {
-    const { id, nombre, anos_experiencia, especialidad } = req.body;
-    // console.log("Valor del body: ", id, nombre, anos_experiencia, especialidad);
+    const { id,nombre,anos_experiencia,especialidad } = req.body;
+    console.log("Valor del body: ", id, nombre, anos_experiencia, especialidad);
     try {
-        async function editar(id, nombre, anos_experiencia, especialidad) {
-            const result = await pool.query("UPDATE skaters SET nombre = $1, anos_experiencia = $2, especialidad = $3 WHERE id = $4 RETURNING *", [nombre, anos_experiencia, especialidad,id]);
-            return result.rows[0];
-        }
-        await editar(id, nombre, anos_experiencia, especialidad);
+        await editar(id,nombre,Number(anos_experiencia),especialidad);
         // const skaterB = skaters.findIndex((s) => s.id == id);
         // //        if (skaterB) {
         // skaters[skaterB].nombre = nombre;
@@ -271,11 +234,7 @@ app.put("/skaters/status/:id", async (req, res) => {
 
         //if (skaterB !== -1) {
         // skaters[skaterB].estado = estado;
-        async function editar (id,estado) {
-            const result = await pool.query("UPDATE skaters SET estado = $1 WHERE id = $2 RETURNING *", [estado,id]);
-            return result.rows[0];
-        }
-        editar(id,estado)
+        editarStatus(id, estado)
         res.status(200).send("Estado Actualizado con éxito");
         // } else {
         //     res.status(400).send("No existe este Skater");
@@ -292,16 +251,8 @@ app.put("/skaters/status/:id", async (req, res) => {
 app.delete("/skaters/:id", async (req, res) => {
     const { id } = req.params
     try {
-
-        async function eliminar(id) {
-            const result = await pool.query("DELETE FROM skaters WHERE id = $1 RETURNING *", [id]);
-            // const skaterEliminado = result.rows[0];
-            // return skaterEliminado;
-            return result.rows[0];
-        }
         const skaterEliminado = await eliminar(id);
         // const skaterB = skaters.findIndex((s) => s.id == id);
-
         if (skaterEliminado !== -1) {
             skaters.splice(skaterEliminado, 1);
             res.status(200).send("Skater Eliminado con éxito");
